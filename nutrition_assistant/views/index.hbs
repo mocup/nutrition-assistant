@@ -17,7 +17,7 @@
     </div>
     <div class="child">
       <h2>Upload Food Image</h2>
-      <form id="upload-form-food" action="/upload-food-image" method="POST">
+      <form id="upload-form-food" action="/upload-food-image" method="POST" enctype="multipart/form-data">
         <div class="upload-container"><input id="file-picker-food" type="file" name="image"></div>
         <div><input type="submit" value="Upload Image"></div>
       </form>

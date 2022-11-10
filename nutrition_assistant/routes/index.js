@@ -66,12 +66,12 @@ router.post('/upload-label-image', uploadStrategy, async (req, res) => {
 });
 
 router.post('/fetch-nutrition-data', async (req, res) => {
-  const offset = new Date().getTimezoneOffset() / 60;
+  const hours_offset = new Date().getTimezoneOffset() / 60;
   const date_range = req.body.dates.split(" ");
-  const start = date_range[0];
-  const end = date_range[2];
-  console.log(start);
-  console.log(end);
+  const start_date = new Date(date_range[0]).toISOString();
+  const end_date = new Date(date_range[2]).toISOString();
+  console.log("start date", start_date);
+  console.log("end date", end_date);
 
   // Create database if it doesn't exist
   const { database } = await cosmosClient.databases.createIfNotExists({id:'nutrition_database'});
@@ -87,7 +87,7 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   console.log(`${container.id} container ready`);
 
   const querySpec = {
-    query: "select * from nutrition_data d where d.timestamp > " + start,
+    query: "select * from nutrition_data d where d.timestamp > '" + start_date + "' and d.timestamp < '" + end_date + "'",
   };
 
   // Get items 
@@ -95,6 +95,8 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   for (const item of resources) {
     console.log(`${item['Total Fat']}`);
   }
+
+  res.render('success', { message: 'Your request was successful!' });
 });
 
 

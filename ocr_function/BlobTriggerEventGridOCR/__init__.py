@@ -20,26 +20,46 @@ cosmosdb_client = CosmosClient(url=os.environ["cosmosdb_endpoint"],
 
 
 def db_write(nutrition_data):
-    database = cosmosdb_client.create_database_if_not_exists(id="nutrition_database")
-    partitionKeyPath = PartitionKey(path="/id")
-    container = database.create_container_if_not_exists(id="nutrition_data", partition_key=partitionKeyPath)
-    container.create_item(nutrition_data)
+    db_name, container_name = "nutrition_database", "nutrition_data"
+    
+    try:
+        # Get database and container clients
+        database = cosmosdb_client.get_database_client(db_name)
+        container = database.get_container_client(container_name)
+        
+        # Insert nutrition data
+        container.upsert_item(nutrition_data)
+        logging.info(f"Successfully wrote {nutrition_data} item to {container_name} container in {db_name} database.")
+    
+    except Exception as e:
+        logging.error(f"Error writing {nutrition_data} item to {container_name} container in {db_name} database!")
+        logging.error(e)
 
 
 def preprocess(input):        
+    # The nutrition_info dictionary is initialized with an id field required to write it to CosmosDB
     nutrition_info = {'id' : str(uuid.uuid4())}
-    desired_fields = ['Total Carbohydrate', 'Total Fat', 'Protein', 'Calories']
+    desired_fields = ['Calories', 'Total Fat', 'Cholesterol', 'Sodium',
+                      'Total Carbohydrate', 'Dietary Fiber', 'Total Sugars', 'Protein']
     
+    # Iterate through OCR result and extract desired nutrition label fields
     for text_result in input:
         for i, line in enumerate(text_result.lines):
             for desired_field in desired_fields:
-                if desired_field in line.text:         
+                if desired_field in line.text:     
+                    # Azure OCR returns calorie value on next line 
                     if desired_field == 'Calories':
-                        nutrition_info[desired_field] = text_result.lines[i+1].text
+                        nutrition_info[desired_field] = float(text_result.lines[i+1].text)
                     else:
+                        # Remove units
                         value = line.text.split()[-1]
                         value_no_units = value.replace('mg', '').replace('g', '')
-                        nutrition_info[desired_field] = value_no_units
+                        
+                        # Azure OCR occasionally picks up zeroes as 'O' characters
+                        if value_no_units == 'O':
+                            value_no_units = 0.0
+                        
+                        nutrition_info[desired_field] = float(value_no_units)
     
     return nutrition_info
 
@@ -58,15 +78,13 @@ def perform_ocr(blob_uri):
         read_result = computervision_client.get_read_result(operation_id)
         if read_result.status not in ['notStarted', 'running']:
             break
-        time.sleep(1)
+        time.sleep(0.1)
 
     return read_result
 
 
 def main(myblob: func.InputStream):
-    logging.info(f"Python blob trigger function processed blob \n"
-                 f"Name: {myblob.name}\n"
-                 f"Blob Size: {myblob.length} bytes")
+    logging.info(f"Python blob trigger function processed blob {myblob.name}\n")
     
     # Perform OCR
     read_result = perform_ocr(myblob.uri)    
@@ -74,6 +92,8 @@ def main(myblob: func.InputStream):
     # If OCR is successful, preprocess result and write to CosmosDB
     if read_result.status == OperationStatusCodes.succeeded:
         nutrition_data = preprocess(read_result.analyze_result.read_results)
-        nutrition_data['timestamp'] = read_result.created_date_time
         
-        db_write(nutrition_data)
+        # Only write to DB if any macronutrient data is extracted (picture is actually of nutrition label)
+        if len(nutrition_data) > 1:
+            nutrition_data['timestamp'] = read_result.created_date_time
+            db_write(nutrition_data)

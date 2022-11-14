@@ -1,0 +1,61 @@
+<h1>Success!</h1>
+
+<p>{{message}}</p>
+
+
+<h2>Nutrition Data from {{startDate}} to {{endDate}}</h2>
+<table border=1 frame=void rules=rows width="33%">
+    <tr>
+        <th style="text-align: center">Macronutrient</th>
+        <th style="text-align: center">Total Quantity</th>
+        <th style="text-align: center">Daily Average</th>
+    </tr>
+    <tr>
+        <td style="text-align: center">Calories</td>
+        <td style="text-align: center">{{resources.$1}}</td>
+        <td style="text-align: center">{{resourceAverages.$1}}</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">Total Fat</td>
+        <td style="text-align: center">{{resources.$2}} g</td>
+        <td style="text-align: center">{{resourceAverages.$2}} g</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">Cholesterol</td>
+        <td style="text-align: center">{{resources.$3}} mg</td>
+        <td style="text-align: center">{{resourceAverages.$3}} mg</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">Sodium</td>
+        <td style="text-align: center">{{resources.$4}} mg</td>
+        <td style="text-align: center">{{resourceAverages.$4}} mg</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">Total Carbohydrate</td>
+        <td style="text-align: center">{{resources.$5}} g</td>
+        <td style="text-align: center">{{resourceAverages.$5}} g</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">Dietary Fiber</td>
+        <td style="text-align: center">{{resources.$6}} g</td>
+        <td style="text-align: center">{{resourceAverages.$6}} g</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">Total Sugars</td>
+        <td style="text-align: center">{{resources.$7}} g</td>
+        <td style="text-align: center">{{resourceAverages.$7}} g</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">Protein</td>
+        <td style="text-align: center">{{resources.$8}} g</td>
+        <td style="text-align: center">{{resourceAverages.$8}} g</td>
+    </tr>
+</table>
+
+<br>
+<hr>
+<br>
+
+<p></p>
+
+<a href="/">Return home</a>

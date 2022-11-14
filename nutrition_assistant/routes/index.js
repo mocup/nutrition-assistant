@@ -41,6 +41,8 @@ const getBlobName = originalName => {
 };
 
 const computeDateRange = dates => {
+  // Convert range of dates from local time to UTC.
+
   // offset between local time and UTC time
   const hoursOffset = new Date().getTimezoneOffset() / 60;
 
@@ -65,11 +67,8 @@ const computeDateRange = dates => {
   // remove decimal on seconds to match database timestamp format
   startDate = startDate.slice(0,19) + "Z";
   endDate = endDate.slice(0,19) + "Z";
-
-  console.log("UTC start date", startDate);
-  console.log("UTC end date", endDate);
-
-  return {startDate, endDate};
+  
+  return {startDateUTC: startDate, endDateUTC: endDate};
 };
 
 router.get('/', async (req, res, next) => {
@@ -98,10 +97,15 @@ router.post('/upload-label-image', uploadStrategy, async (req, res) => {
 });
 
 router.post('/fetch-nutrition-data', async (req, res) => {
+  // extract local dates from UI
   const dateRange = req.body.dates.split(" ");
-  const dates = {startDate: new Date(dateRange[0]).toISOString(), 
-                      endDate: new Date(dateRange[2]).toISOString()}
-  const {startDate, endDate} = computeDateRange(dates)
+  const startDateLocal = new Date(dateRange[0]);
+  const endDateLocal = new Date(dateRange[2]);
+  const dates = {startDate: startDateLocal.toISOString(), 
+                 endDate: endDateLocal.toISOString()}
+
+  // convert local dates to UTC
+  const {startDateUTC, endDateUTC} = computeDateRange(dates)
 
   // Create database if it doesn't exist
   const { database } = await cosmosClient.databases.createIfNotExists({id:'nutrition_database'});
@@ -114,17 +118,37 @@ router.post('/fetch-nutrition-data', async (req, res) => {
     }
   });
 
+  // database query gets totals for all macronutrients in chosen range
   const querySpec = {
-    query: "select * from nutrition_data d where d.timestamp >= '" + startDate + "' and d.timestamp < '" + endDate + "'",
+    query: `select 
+            sum(d['Calories']), 
+            sum(d['Total Fat']), 
+            sum(d['Cholesterol']), 
+            sum(d['Sodium']), 
+            sum(d['Total Carbohydrate']), 
+            sum(d['Dietary Fiber']), 
+            sum(d['Total Sugars']), 
+            sum(d['Protein']) 
+            from nutrition_data d 
+            where d.timestamp >= '` + startDateUTC + "' and d.timestamp < '" + endDateUTC + "'",
   };
 
-  // Get items 
   const { resources } = await container.items.query(querySpec).fetchAll();
-  for (const item of resources) {
-    console.log(`${item['Total Fat']}`);
+
+  // also compute daily averages over selected range
+  const numDays = Math.floor((endDateLocal.getTime() - startDateLocal.getTime()) / (1000 * 3600 * 24)) + 1;
+  var resourceAverages = {};
+  for(const [key, value] of Object.entries(resources[0])){
+    resourceAverages[key] = value/numDays;
   }
 
-  res.render('success', { message: 'Your request was successful!' });
+  // render results
+  res.render('cosmosSuccess', { message: 'Nutrition data retrieved from CosmosDB.', 
+                                resources: resources[0],
+                                resourceAverages,
+                                startDate: dateRange[0],
+                                endDate: dateRange[2]
+                              });
 });
 
 

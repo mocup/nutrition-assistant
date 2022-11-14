@@ -7,10 +7,6 @@ a {
   color: #00B7FF;
 }
 
-table, th, td {
-  border:1px solid black;
-}
-
 .upload-container {
   border: solid 1px #ccc;
   padding: 10px;
@@ -21,9 +17,4 @@ table, th, td {
 .grid-parent-upload {
   display: grid;
   grid-template-columns: 1fr 1fr
-}
-
-.grid-parent-table {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr
 }

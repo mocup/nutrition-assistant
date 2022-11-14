@@ -40,6 +40,38 @@ const getBlobName = originalName => {
   return `${identifier}-${originalName}`;
 };
 
+const computeDateRange = dates => {
+  // offset between local time and UTC time
+  const hoursOffset = new Date().getTimezoneOffset() / 60;
+
+  // convert selected local dates into Date objects
+  var startDate = dates.startDate;
+  startDate = new Date(startDate.slice(0,10) + "T00:00:00.000Z");
+
+  var endDate = dates.endDate;
+  endDate = new Date(endDate.slice(0,10) + "T00:00:00.000Z");
+
+  // increment end date by 1 so that SQL query includes data from last day in range
+  endDate.setDate(endDate.getDate() + 1);
+
+  // convert local time to UTC time
+  startDate.setHours(startDate.getHours() + hoursOffset);
+  endDate.setHours(endDate.getHours() + hoursOffset);
+
+  // return strings in ISO format
+  startDate = startDate.toISOString();
+  endDate = endDate.toISOString();
+
+  // remove decimal on seconds to match database timestamp format
+  startDate = startDate.slice(0,19) + "Z";
+  endDate = endDate.slice(0,19) + "Z";
+
+  console.log("UTC start date", startDate);
+  console.log("UTC end date", endDate);
+
+  return {startDate, endDate};
+};
+
 router.get('/', async (req, res, next) => {
   let viewData;
   viewData = {
@@ -66,16 +98,13 @@ router.post('/upload-label-image', uploadStrategy, async (req, res) => {
 });
 
 router.post('/fetch-nutrition-data', async (req, res) => {
-  const hours_offset = new Date().getTimezoneOffset() / 60;
-  const date_range = req.body.dates.split(" ");
-  const start_date = new Date(date_range[0]).toISOString();
-  const end_date = new Date(date_range[2]).toISOString();
-  console.log("start date", start_date);
-  console.log("end date", end_date);
+  const dateRange = req.body.dates.split(" ");
+  const dates = {startDate: new Date(dateRange[0]).toISOString(), 
+                      endDate: new Date(dateRange[2]).toISOString()}
+  const {startDate, endDate} = computeDateRange(dates)
 
   // Create database if it doesn't exist
   const { database } = await cosmosClient.databases.createIfNotExists({id:'nutrition_database'});
-  console.log(`${database.id} database ready`);
 
   // Create container if it doesn't exist
   const { container } = await database.containers.createIfNotExists({
@@ -84,10 +113,9 @@ router.post('/fetch-nutrition-data', async (req, res) => {
         paths: ["/id"]
     }
   });
-  console.log(`${container.id} container ready`);
 
   const querySpec = {
-    query: "select * from nutrition_data d where d.timestamp > '" + start_date + "' and d.timestamp < '" + end_date + "'",
+    query: "select * from nutrition_data d where d.timestamp >= '" + startDate + "' and d.timestamp < '" + endDate + "'",
   };
 
   // Get items 

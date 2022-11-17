@@ -7,7 +7,7 @@ import azure.functions as func
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from msrest.authentication import CognitiveServicesCredentials
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
-from azure.cosmos import CosmosClient, PartitionKey
+from azure.cosmos import CosmosClient
 
 
 # Azure Computer Vision Authentication
@@ -19,6 +19,7 @@ cosmosdb_client = CosmosClient(url=os.environ["cosmosdb_endpoint"],
                                credential=os.environ["cosmosdb_subscription_key"])
 
 
+# Write nutrition data to the database
 def db_write(nutrition_data):
     db_name, container_name = "nutrition_database", "nutrition_data"
     
@@ -36,9 +37,11 @@ def db_write(nutrition_data):
         logging.error(e)
 
 
+# Format the text data as a dictionary mapping macronutrients to quantities
 def preprocess(input):        
     # The nutrition_info dictionary is initialized with an id field required to write it to CosmosDB
     nutrition_info = {'id' : str(uuid.uuid4())}
+
     desired_fields = ['Calories', 'Total Fat', 'Cholesterol', 'Sodium',
                       'Total Carbohydrate', 'Dietary Fiber', 'Total Sugars', 'Protein']
     
@@ -64,12 +67,14 @@ def preprocess(input):
     return nutrition_info
 
 
+# Use OCR to extract all text from the image
 def perform_ocr(blob_uri):
     # Call API with URL and raw response (allows you to get the operation location)
     read_response = computervision_client.read(blob_uri, raw=True)
 
     # Get the operation location (URL with an ID at the end) from the response
     read_operation_location = read_response.headers["Operation-Location"]
+
     # Grab the ID from the URL
     operation_id = read_operation_location.split("/")[-1]
 
@@ -85,7 +90,7 @@ def perform_ocr(blob_uri):
 
 def main(myblob: func.InputStream):
     logging.info(f"Python blob trigger function processed blob {myblob.name}\n")
-    
+
     # Perform OCR
     read_result = perform_ocr(myblob.uri)    
     

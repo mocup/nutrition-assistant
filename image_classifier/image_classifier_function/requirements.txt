@@ -5,3 +5,4 @@
 azure-functions
 msrestazure
 azure-cognitiveservices-vision-customvision
+azure-cosmos

@@ -139,7 +139,7 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   const numDays = Math.floor((endDateLocal.getTime() - startDateLocal.getTime()) / (1000 * 3600 * 24)) + 1;
   var resourceAverages = {};
   for(const [key, value] of Object.entries(resources[0])){
-    resourceAverages[key] = value/numDays;
+    resourceAverages[key] = (value/numDays).toFixed(2);
   }
 
   // render results

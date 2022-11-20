@@ -12,6 +12,7 @@ from azure.cosmos import CosmosClient
 prediction_endpoint = os.environ["prediction_endpoint"]
 prediction_key = os.environ["prediction_key"]
 project_id = os.environ["project_id"]
+publish_iteration_name = os.environ["publish_iteration_name"]
 
 # Azure Custom Vision client authentication
 prediction_credentials = ApiKeyCredentials(in_headers={"Prediction-key": prediction_key})
@@ -22,7 +23,7 @@ cosmosdb_client = CosmosClient(url=os.environ["cosmosdb_endpoint"],
                                credential=os.environ["cosmosdb_subscription_key"])
 
 
-# Write nutrition data to the database
+# Write nutrition data dictionary to the database
 def db_write(nutrition_data):
     db_name, container_name = "nutrition_database", "nutrition_data"
     
@@ -44,11 +45,11 @@ def get_nutrition_data(prediction):
     # The nutrition_info dictionary is initialized with an id field required to write it to CosmosDB
     nutrition_info = {'id' : str(uuid.uuid4())}
     
-    # Make call to API Ninjas nutrition API with food classification
+    # Make call to API Ninjas Nutrition API for nutrition information given food prediction
     api_url = f"https://api.api-ninjas.com/v1/nutrition?query={prediction}"
     response = requests.get(api_url, headers={'X-Api-Key': os.environ["api_key"]})
     
-    # If OK response status, construct nutrition_info dictionary from response
+    # If OK response, construct nutrition_info dictionary from response
     if response.status_code == requests.codes.ok:
         response_dict = response.json()[0]
         nutrition_info['Calories'] = response_dict['calories']
@@ -60,16 +61,16 @@ def get_nutrition_data(prediction):
         nutrition_info['Dietary Fiber'] = response_dict['fiber_g']
         nutrition_info['Total Sugars'] = response_dict['sugar_g']
         nutrition_info['Protein'] = response_dict['protein_g']    
-        
+        logging.info(f"Successfully aggregated nutrition data!")
     else:
-        print("Error:", response.status_code, response.text)
+        logging.error(f"API Ninjas Nutrition API Error {response.status_code}: {response.text}")
     
     return nutrition_info
 
 
 def classify_image(blob_uri):
     # Classify uploaded food image    
-    results = predictor.classify_image_url(project_id, "classifyModel", blob_uri)
+    results = predictor.classify_image_url(project_id, publish_iteration_name, blob_uri)
 
     # Display the results.
     for prediction in results.predictions:
@@ -77,18 +78,19 @@ def classify_image(blob_uri):
               ": {0:.2f}%".format(prediction.probability * 100))
         
     # Return top prediction
-    return results.predictions[0].tag_name
+    return results.predictions[0]
 
 
 def main(myblob: func.InputStream):
     logging.info(f"Python blob trigger function processed blob {myblob.name}\n")
 
     prediction = classify_image(myblob.uri)
+    nutrition_data = get_nutrition_data(prediction.tag_name)
     
-    nutrition_data = get_nutrition_data(prediction)
-    
-    # Only write to DB if (1) we extract a prediction and (2) the API call returns OK
+    # Only write to DB if (1) a prediction can be made and (2) nutrition data can be extracted
     if len(nutrition_data) > 1:
-        nutrition_data['timestamp'] = datetime.datetime.utcnow()
+        nutrition_data['prediction'] = prediction.tag_name
+        nutrition_data['probability'] = prediction.probability * 100
+        nutrition_data['timestamp'] = datetime.datetime.utcnow().isoformat()
         db_write(nutrition_data)
     

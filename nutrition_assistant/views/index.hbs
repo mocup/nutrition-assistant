@@ -1,8 +1,3 @@
-<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-
 <center>
   <h1>Nutrition Assistant</h1>
   <br>
@@ -40,6 +35,12 @@
 <br>
 <div><input type="submit" value="Fetch Data" form="get-data"></div>
 
+{{!-- Date Range Picker Library
+https://github.com/dangrossman/daterangepicker --}}
+<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <script type="text/javascript">
 $(function() {
 
@@ -69,7 +70,7 @@ $(function() {
 </script>
 
   <br><br><br>
-  <p>This app has no official privacy policy. Your data will be uploaded to Azure Blob Storage. Your images will be public once you upload them and there is no automated way to remove them.</p>
+  <p>This app has no official privacy policy. Your images will be uploaded to Azure Blob Storage and there is no automated way to remove them.</p>
 </center>
 <script>
   document.addEventListener('DOMContentLoaded', () => {

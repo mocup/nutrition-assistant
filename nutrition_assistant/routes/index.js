@@ -146,7 +146,8 @@ router.post('/fetch-nutrition-data', async (req, res) => {
 
   // database query gets food predictions and probabilities in chosen range
   const classifierQuerySpec = {
-    query: `select 
+    query: `select
+            d['timestamp'],
             d['prediction'],
             d['probability']
             from nutrition_data d 
@@ -157,7 +158,8 @@ router.post('/fetch-nutrition-data', async (req, res) => {
 
   // only include non-empty predictions in table
   predictions = predictions.filter(element => {
-    if (Object.keys(element).length !== 0) {
+    if (Object.keys(element).length > 1) {
+      element['timestamp'] = new Date(element['timestamp']).toLocaleDateString();
       return true;
     }
   

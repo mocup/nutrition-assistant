@@ -1,11 +1,9 @@
 <center>
-    <h1>Success!</h1>
-    <p>{{message}}</p>
     <h2>Nutrition Data from {{startDate}} to {{endDate}}</h2>
     <div class="parent grid-parent-upload">
         <div class="child">
             <h3>Macronutrient Data</h3>
-            <table border=1 frame=void rules=rows width="66%">
+            <table border=1 frame=void rules=rows width="80%">
                 <tr>
                     <th style="text-align: center">Macronutrient</th>
                     <th style="text-align: center">Total Quantity</th>
@@ -55,13 +53,15 @@
         </div>
         <div class="child">
             <h3>Uploaded Food Predictions</h3>
-            <table border=1 frame=void rules=rows width="66%">
+            <table border=1 frame=void rules=rows width="80%">
                 <tr>
+                    <th style="text-align: center">Date</th>
                     <th style="text-align: center">Predicted Food</th>
                     <th style="text-align: center">Probability</th>
                 </tr>
                 {{#each predictions}}
                 <tr>
+                    <td style="text-align: center">{{this.timestamp}}</td>
                     <td style="text-align: center">{{this.prediction}}</td>
                     <td style="text-align: center">{{this.probability}} %</td>
                 </tr>
@@ -69,6 +69,6 @@
             </table>
         </div>
     </div>
-    <br>
+    <br><br><br>
     <a href="/">Return home</a>
 </center>

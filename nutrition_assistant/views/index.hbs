@@ -1,6 +1,6 @@
 <center>
   <h1>Nutrition Assistant</h1>
-  <p>Choose one of the options for uploading images below. If a nutrition label is uploaded, the macronutrients and their quantities will be extracted directly from the label. If a food image is uploaded, the food will be classified automatically. One serving's worth of macronutrients for the predicted class will then be logged in the database.</p>
+  <p style="width:75%;">Choose one of the options for uploading images below. If a nutrition label is uploaded, the macronutrients and their quantities will be extracted directly from the label. If a food image is uploaded, the food will be classified automatically and one serving's worth of macronutrients for the predicted class will be logged to the database.</p>
   <div class="parent grid-parent-upload">
     <div class="child">
       <h2>Upload Nutrition Label Image</h2>
@@ -25,7 +25,7 @@
   <br>
 
   <h2>Macronutrient Analysis</h2>
-  <p>Select a date range using the tool below. Once "fetch data" is pressed, all macronutrient data logged in the selected range will be retrieved and summarized.</p>
+  <p>Select a date range using the tool below. Once "Fetch Data" is pressed, all macronutrient data logged in the selected range will be retrieved and summarized.</p>
   <br>
   <form id="get-data" action="/fetch-nutrition-data" method="POST" enctype="application/x-www-form-urlencoded">
     <div class = "upload-date">
@@ -35,6 +35,10 @@
 
   <br>
   <div><input type="submit" value="Fetch Data" form="get-data"></div>
+
+  
+  <br><br><hr><br>
+  <p style="font-size:85%;">This app has no official privacy policy. Your images will be uploaded to Azure Blob Storage and there is no automated way to remove them.</p>
 
   {{!-- Date Range Picker Library
   https://github.com/dangrossman/daterangepicker --}}
@@ -70,8 +74,6 @@
   });
   </script>
 
-  <br><br><br>
-  <p>This app has no official privacy policy. Your images will be uploaded to Azure Blob Storage and there is no automated way to remove them.</p>
 </center>
 
 <script>

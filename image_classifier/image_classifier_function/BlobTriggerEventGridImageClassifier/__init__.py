@@ -41,6 +41,7 @@ def db_write(nutrition_data):
         logging.error(e)
 
 
+# Retrieve macronutrient data for predicted food using external API
 def get_nutrition_data(prediction):
     # The nutrition_info dictionary is initialized with an id field required to write it to CosmosDB
     nutrition_info = {'id' : str(uuid.uuid4())}
@@ -55,7 +56,6 @@ def get_nutrition_data(prediction):
         nutrition_info['Calories'] = response_dict['calories']
         nutrition_info['Total Fat'] = response_dict['fat_total_g']
         nutrition_info['Cholesterol'] = response_dict['cholesterol_mg']
-        nutrition_info['Cholesterol'] = response_dict['cholesterol_mg']
         nutrition_info['Sodium'] = response_dict['sodium_mg']
         nutrition_info['Total Carbohydrate'] = response_dict['carbohydrates_total_g']
         nutrition_info['Dietary Fiber'] = response_dict['fiber_g']
@@ -68,6 +68,7 @@ def get_nutrition_data(prediction):
     return nutrition_info
 
 
+# Use pre-trained classifier to identify food in image
 def classify_image(blob_uri):
     # Classify uploaded food image    
     results = predictor.classify_image_url(project_id, publish_iteration_name, blob_uri)

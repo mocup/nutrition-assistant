@@ -19,7 +19,7 @@ cosmosdb_client = CosmosClient(url=os.environ["cosmosdb_endpoint"],
                                credential=os.environ["cosmosdb_subscription_key"])
 
 
-# Write nutrition data to the database
+# Write nutrition data dictionary to the database
 def db_write(nutrition_data):
     db_name, container_name = "nutrition_database", "nutrition_data"
     

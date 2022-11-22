@@ -81,6 +81,7 @@ router.get('/', async (req, res, next) => {
 });
 
 router.post('/upload-label-image', uploadStrategy, async (req, res) => {
+  // upload nutrition label image into blob store
   const blobName = getBlobName(req.file.originalname);
   const stream = getStream(req.file.buffer);
   const containerClient = blobServiceClient.getContainerClient('label-images');;
@@ -97,6 +98,7 @@ router.post('/upload-label-image', uploadStrategy, async (req, res) => {
 });
 
 router.post('/fetch-nutrition-data', async (req, res) => {
+  // get nutrition data in specified date range from cosmos db
   // extract local dates from UI
   const dateRange = req.body.dates.split(" ");
   const startDateLocal = new Date(dateRange[0]);
@@ -107,10 +109,10 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   // convert local dates to UTC
   const {startDateUTC, endDateUTC} = computeDateRange(dates)
 
-  // Create database if it doesn't exist
+  // create database if it doesn't exist
   const { database } = await cosmosClient.databases.createIfNotExists({id:'nutrition_database'});
 
-  // Create container if it doesn't exist
+  // create container if it doesn't exist
   const { container } = await database.containers.createIfNotExists({
     id: 'nutrition_data',
     partitionKey: {
@@ -119,7 +121,7 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   });
 
   // database query gets totals for all macronutrients in chosen range
-  const querySpec = {
+  const macronutrientQuerySpec = {
     query: `select 
             sum(d['Calories']), 
             sum(d['Total Fat']), 
@@ -128,31 +130,52 @@ router.post('/fetch-nutrition-data', async (req, res) => {
             sum(d['Total Carbohydrate']), 
             sum(d['Dietary Fiber']), 
             sum(d['Total Sugars']), 
-            sum(d['Protein']) 
+            sum(d['Protein'])
             from nutrition_data d 
             where d.timestamp >= '` + startDateUTC + "' and d.timestamp < '" + endDateUTC + "'",
   };
 
-  const { resources } = await container.items.query(querySpec).fetchAll();
+  const { resources: macronutrients } = await container.items.query(macronutrientQuerySpec).fetchAll();
 
   // also compute daily averages over selected range
   const numDays = Math.floor((endDateLocal.getTime() - startDateLocal.getTime()) / (1000 * 3600 * 24)) + 1;
-  var resourceAverages = {};
-  for(const [key, value] of Object.entries(resources[0])){
-    resourceAverages[key] = (value/numDays).toFixed(2);
+  var macronutrientAverages = {};
+  for(const [key, value] of Object.entries(macronutrients[0])){
+    macronutrientAverages[key] = (value/numDays).toFixed(2);
   }
 
+  // database query gets food predictions and probabilities in chosen range
+  const classifierQuerySpec = {
+    query: `select 
+            d['prediction'],
+            d['probability']
+            from nutrition_data d 
+            where d.timestamp >= '` + startDateUTC + "' and d.timestamp < '" + endDateUTC + "'",
+  };
+
+  var { resources: predictions } = await container.items.query(classifierQuerySpec).fetchAll();
+
+  // only include non-empty predictions in table
+  predictions = predictions.filter(element => {
+    if (Object.keys(element).length !== 0) {
+      return true;
+    }
+  
+    return false;
+  });
+  
   // render results
   res.render('cosmosSuccess', { message: 'Nutrition data retrieved from CosmosDB.', 
-                                resources: resources[0],
-                                resourceAverages,
+                                macronutrients: macronutrients[0],
+                                macronutrientAverages,
+                                predictions,
                                 startDate: dateRange[0],
                                 endDate: dateRange[2]
                               });
 });
 
-
 router.post('/upload-food-image', uploadStrategy, async (req, res) => {
+  // upload food image into blob store
   const blobName = getBlobName(req.file.originalname);
   const stream = getStream(req.file.buffer);
   const containerClient = blobServiceClient.getContainerClient('food-images');;

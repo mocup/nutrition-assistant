@@ -1,61 +1,74 @@
-<h1>Success!</h1>
-
-<p>{{message}}</p>
-
-
-<h2>Nutrition Data from {{startDate}} to {{endDate}}</h2>
-<table border=1 frame=void rules=rows width="33%">
-    <tr>
-        <th style="text-align: center">Macronutrient</th>
-        <th style="text-align: center">Total Quantity</th>
-        <th style="text-align: center">Daily Average</th>
-    </tr>
-    <tr>
-        <td style="text-align: center">Calories</td>
-        <td style="text-align: center">{{resources.$1}}</td>
-        <td style="text-align: center">{{resourceAverages.$1}}</td>
-    </tr>
-    <tr>
-        <td style="text-align: center">Total Fat</td>
-        <td style="text-align: center">{{resources.$2}} g</td>
-        <td style="text-align: center">{{resourceAverages.$2}} g</td>
-    </tr>
-    <tr>
-        <td style="text-align: center">Cholesterol</td>
-        <td style="text-align: center">{{resources.$3}} mg</td>
-        <td style="text-align: center">{{resourceAverages.$3}} mg</td>
-    </tr>
-    <tr>
-        <td style="text-align: center">Sodium</td>
-        <td style="text-align: center">{{resources.$4}} mg</td>
-        <td style="text-align: center">{{resourceAverages.$4}} mg</td>
-    </tr>
-    <tr>
-        <td style="text-align: center">Total Carbohydrate</td>
-        <td style="text-align: center">{{resources.$5}} g</td>
-        <td style="text-align: center">{{resourceAverages.$5}} g</td>
-    </tr>
-    <tr>
-        <td style="text-align: center">Dietary Fiber</td>
-        <td style="text-align: center">{{resources.$6}} g</td>
-        <td style="text-align: center">{{resourceAverages.$6}} g</td>
-    </tr>
-    <tr>
-        <td style="text-align: center">Total Sugars</td>
-        <td style="text-align: center">{{resources.$7}} g</td>
-        <td style="text-align: center">{{resourceAverages.$7}} g</td>
-    </tr>
-    <tr>
-        <td style="text-align: center">Protein</td>
-        <td style="text-align: center">{{resources.$8}} g</td>
-        <td style="text-align: center">{{resourceAverages.$8}} g</td>
-    </tr>
-</table>
-
-<br>
-<hr>
-<br>
-
-<p></p>
-
-<a href="/">Return home</a>
+<center>
+    <h1>Success!</h1>
+    <p>{{message}}</p>
+    <h2>Nutrition Data from {{startDate}} to {{endDate}}</h2>
+    <div class="parent grid-parent-upload">
+        <div class="child">
+            <h3>Macronutrient Data</h3>
+            <table border=1 frame=void rules=rows width="66%">
+                <tr>
+                    <th style="text-align: center">Macronutrient</th>
+                    <th style="text-align: center">Total Quantity</th>
+                    <th style="text-align: center">Daily Average</th>
+                </tr>
+                <tr>
+                    <td style="text-align: center">Calories</td>
+                    <td style="text-align: center">{{macronutrients.$1}}</td>
+                    <td style="text-align: center">{{macronutrientAverages.$1}}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center">Total Fat</td>
+                    <td style="text-align: center">{{macronutrients.$2}} g</td>
+                    <td style="text-align: center">{{macronutrientAverages.$2}} g</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center">Cholesterol</td>
+                    <td style="text-align: center">{{macronutrients.$3}} mg</td>
+                    <td style="text-align: center">{{macronutrientAverages.$3}} mg</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center">Sodium</td>
+                    <td style="text-align: center">{{macronutrients.$4}} mg</td>
+                    <td style="text-align: center">{{macronutrientAverages.$4}} mg</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center">Total Carbohydrate</td>
+                    <td style="text-align: center">{{macronutrients.$5}} g</td>
+                    <td style="text-align: center">{{macronutrientAverages.$5}} g</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center">Dietary Fiber</td>
+                    <td style="text-align: center">{{macronutrients.$6}} g</td>
+                    <td style="text-align: center">{{macronutrientAverages.$6}} g</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center">Total Sugars</td>
+                    <td style="text-align: center">{{macronutrients.$7}} g</td>
+                    <td style="text-align: center">{{macronutrientAverages.$7}} g</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center">Protein</td>
+                    <td style="text-align: center">{{macronutrients.$8}} g</td>
+                    <td style="text-align: center">{{macronutrientAverages.$8}} g</td>
+                </tr>
+            </table>
+        </div>
+        <div class="child">
+            <h3>Uploaded Food Predictions</h3>
+            <table border=1 frame=void rules=rows width="66%">
+                <tr>
+                    <th style="text-align: center">Predicted Food</th>
+                    <th style="text-align: center">Probability</th>
+                </tr>
+                {{#each predictions}}
+                <tr>
+                    <td style="text-align: center">{{this.prediction}}</td>
+                    <td style="text-align: center">{{this.probability}} %</td>
+                </tr>
+                {{/each}}
+            </table>
+        </div>
+    </div>
+    <br>
+    <a href="/">Return home</a>
+</center>

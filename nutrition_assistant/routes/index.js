@@ -141,6 +141,8 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   const numDays = Math.floor((endDateLocal.getTime() - startDateLocal.getTime()) / (1000 * 3600 * 24)) + 1;
   var macronutrientAverages = {};
   for(const [key, value] of Object.entries(macronutrients[0])){
+    // round total values and average values to two decimal places
+    macronutrients[0][key] = value.toFixed(2);
     macronutrientAverages[key] = (value/numDays).toFixed(2);
   }
 

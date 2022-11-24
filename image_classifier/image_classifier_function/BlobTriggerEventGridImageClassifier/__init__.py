@@ -63,7 +63,7 @@ def get_nutrition_data(prediction):
         nutrition_info['Protein'] = response_dict['protein_g']    
         logging.info(f"Successfully aggregated nutrition data!")
     else:
-        logging.error(f"API Ninjas Nutrition API Error {response.status_code}: {response.text}")
+        logging.error(f"Nutrition API Error {response.status_code}: {response.text}")
     
     return nutrition_info
 
@@ -73,17 +73,16 @@ def classify_image(blob_uri):
     # Classify uploaded food image    
     results = predictor.classify_image_url(project_id, publish_iteration_name, blob_uri)
 
-    # Display the results.
-    for prediction in results.predictions:
-        print("\t" + prediction.tag_name +
-              ": {0:.2f}%".format(prediction.probability * 100))
+    # Log top five predictions with probabilities
+    for i in range(5):
+        logging.info(f"{results.predictions[i].tag_name}, {results.predictions[i].probability * 100}")
         
     # Return top prediction
     return results.predictions[0]
 
 
 def main(myblob: func.InputStream):
-    logging.info(f"Python blob trigger function processed blob {myblob.name}\n")
+    logging.info(f"Python blob trigger food classification function started processing {myblob.name}\n")
 
     prediction = classify_image(myblob.uri)
     nutrition_data = get_nutrition_data(prediction.tag_name)
@@ -91,7 +90,11 @@ def main(myblob: func.InputStream):
     # Only write to DB if (1) a prediction can be made and (2) nutrition data can be extracted
     if len(nutrition_data) > 1:
         nutrition_data['prediction'] = prediction.tag_name
-        nutrition_data['probability'] = prediction.probability * 100
+        nutrition_data['probability'] = round(prediction.probability * 100, 2)
         nutrition_data['timestamp'] = datetime.datetime.utcnow().isoformat()
         db_write(nutrition_data)
+        logging.info(f"Food classification function finished processing blob {myblob.name} \
+                     with prediction {prediction.tag_name}!\n")
+    else:
+        logging.error(f"Food classification function error on blob {myblob.name}")
     

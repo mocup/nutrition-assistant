@@ -49,20 +49,25 @@ def preprocess(input):
     for text_result in input:
         for i, line in enumerate(text_result.lines):
             for desired_field in desired_fields:
-                if desired_field in line.text:     
-                    # Azure OCR returns calorie value on next line 
-                    if desired_field == 'Calories':
-                        nutrition_info[desired_field] = float(text_result.lines[i+1].text)
-                    else:
-                        # Remove units
-                        value = line.text.split()[-1]
-                        value_no_units = value.replace('mg', '').replace('g', '')
-                        
-                        # Azure OCR occasionally picks up zeroes as 'O' characters
-                        if value_no_units == 'O':
-                            value_no_units = 0.0
-                        
-                        nutrition_info[desired_field] = float(value_no_units)
+                if desired_field in line.text: 
+                    try:    
+                        # Azure OCR returns calorie value on next line 
+                        if desired_field == 'Calories':
+                            nutrition_info[desired_field] = float(text_result.lines[i+1].text)
+                        else:
+                            # Remove units
+                            value = line.text.split()[-1]
+                            value_no_units = value.replace('mg', '').replace('g', '')
+                            
+                            # Azure OCR occasionally picks up zeroes as 'O' characters
+                            if value_no_units == 'O':
+                                value_no_units = 0.0
+                            
+                            nutrition_info[desired_field] = float(value_no_units)
+                            logging.info(f"Found field {desired_field} with value {nutrition_info[desired_field]}.")
+                    
+                    except Exception as e:
+                        logging.error(f"Error finding value for field {desired_field}: {e}")
     
     return nutrition_info
 
@@ -85,11 +90,12 @@ def perform_ocr(blob_uri):
             break
         time.sleep(0.1)
 
+    logging.info(f"OCR Response Status: {read_result.status}.")
     return read_result
 
 
 def main(myblob: func.InputStream):
-    logging.info(f"Python blob trigger function processed blob {myblob.name}\n")
+    logging.info(f"Python blob trigger OCR function started processing blob {myblob.name}\n")
 
     # Perform OCR
     read_result = perform_ocr(myblob.uri)    
@@ -102,3 +108,6 @@ def main(myblob: func.InputStream):
         if len(nutrition_data) > 1:
             nutrition_data['timestamp'] = read_result.created_date_time
             db_write(nutrition_data)
+            logging.info(f"OCR function finished processing blob {myblob.name}!\n")
+    else:
+        logging.error(f"OCR function error on blob {myblob.name} with status {read_result.status}")

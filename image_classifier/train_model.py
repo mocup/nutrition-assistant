@@ -37,7 +37,7 @@ def upload_images(project):
     print("Adding images...")
 
     # Max 64 images per batch
-    IMAGES_PER_CLASS = 10
+    IMAGES_PER_CLASS = 64
     for model_class, tag in class_tag_mapping.items():
         image_list = []
         

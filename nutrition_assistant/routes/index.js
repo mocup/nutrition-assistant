@@ -97,7 +97,7 @@ router.post('/upload-label-image', uploadStrategy, async (req, res) => {
     await blockBlobClient.uploadStream(stream,
       uploadOptions.bufferSize, uploadOptions.maxBuffers,
       { blobHTTPHeaders: { blobContentType: "image/jpeg" } });
-    res.render('success', { message: 'Nutrition label uploaded to Azure Blob Storage.' });
+    res.render('success', { message: 'Nutrition label image ' + req.file.originalname + ' was uploaded to Azure Blob Storage.' });
   } catch (err) {
     res.render('error', { message: err.message });
   }
@@ -115,16 +115,8 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   // convert local dates to UTC
   const {startDateUTC, endDateUTC} = computeDateRange(dates)
 
-  // create database if it doesn't exist
-  const { database } = await cosmosClient.databases.createIfNotExists({id:'nutrition_database'});
-
-  // create container if it doesn't exist
-  const { container } = await database.containers.createIfNotExists({
-    id: 'nutrition_data',
-    partitionKey: {
-        paths: ["/id"]
-    }
-  });
+  // access nutrition data container
+  const container = cosmosClient.database("nutrition_database").container("nutrition_data");
 
   // database query gets totals for all macronutrients in chosen range
   const macronutrientQuerySpec = {
@@ -201,7 +193,7 @@ router.post('/upload-food-image', uploadStrategy, async (req, res) => {
     await blockBlobClient.uploadStream(stream,
       uploadOptions.bufferSize, uploadOptions.maxBuffers,
       { blobHTTPHeaders: { blobContentType: "image/jpeg" } });
-    res.render('success', { message: 'Food image uploaded to Azure Blob Storage.' });
+    res.render('success', { message: 'Food image ' + req.file.originalname + ' was uploaded to Azure Blob Storage.' });
   } catch (err) {
     res.render('error', { message: err.message });
   }

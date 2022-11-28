@@ -86,6 +86,12 @@ router.post('/upload-label-image', uploadStrategy, async (req, res) => {
   const stream = getStream(req.file.buffer);
   const containerClient = blobServiceClient.getContainerClient('label-images');;
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const mimeType = req.file.mimetype;
+  
+  // check mimetype
+  if (!mimeType.startsWith('image/')) {
+    return res.render('error', { message: "Only image file types are supported."});
+  }
 
   try {
     await blockBlobClient.uploadStream(stream,
@@ -184,6 +190,12 @@ router.post('/upload-food-image', uploadStrategy, async (req, res) => {
   const stream = getStream(req.file.buffer);
   const containerClient = blobServiceClient.getContainerClient('food-images');;
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const mimeType = req.file.mimetype;
+  
+  // check mimetype
+  if (!mimeType.startsWith('image/')) {
+    return res.render('error', { message: "Only image file types are supported."});
+  }
 
   try {
     await blockBlobClient.uploadStream(stream,

@@ -38,7 +38,8 @@ def upload_images(project):
 
     # Max 64 images per batch
     IMAGES_PER_CLASS = 64
-    for model_class, tag in class_tag_mapping.items():
+    for model_class, tag in class_tag_mapping.items():   
+        # BATCH 1
         image_list = []
         
         for image_num in range(1, IMAGES_PER_CLASS + 1):
@@ -48,12 +49,29 @@ def upload_images(project):
     
         upload_result = trainer.create_images_from_files(project.id, ImageFileCreateBatch(images=image_list))
         if not upload_result.is_batch_successful:
-            print(f"Image batch upload failed for {model_class} class")
+            print(f"Batch 1 upload failed for {model_class} class")
             for image in upload_result.images:
                 print("Image status: ", image.status)
             exit(-1)
         else:
-            print(f"Image batch upload successful for {model_class} class")
+            print(f"Batch 1 upload successful for {model_class} class")
+                
+        # BATCH 2
+        image_list = []
+        
+        for image_num in range(IMAGES_PER_CLASS + 1, 2 * IMAGES_PER_CLASS + 1):
+            file_name = f"{model_class}_{image_num}.jpg"
+            with open(os.path.join (base_image_location, model_class, file_name), "rb") as image_contents:
+                image_list.append(ImageFileCreateEntry(name=file_name, contents=image_contents.read(), tag_ids=[tag.id]))
+    
+        upload_result = trainer.create_images_from_files(project.id, ImageFileCreateBatch(images=image_list))
+        if not upload_result.is_batch_successful:
+            print(f"Batch 2 upload failed for {model_class} class")
+            for image in upload_result.images:
+                print("Image status: ", image.status)
+            exit(-1)
+        else:
+            print(f"Batch 2 upload successful for {model_class} class")
 
 
 def train_model(project):    

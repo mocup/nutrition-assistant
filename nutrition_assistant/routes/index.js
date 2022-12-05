@@ -18,14 +18,24 @@ const getStream = require('into-stream');
 const ONE_MEGABYTE = 1024 * 1024;
 const uploadOptions = { bufferSize: 4 * ONE_MEGABYTE, maxBuffers: 20 };
 
-const sharedKeyCredential = new StorageSharedKeyCredential(
-  process.env.AZURE_STORAGE_ACCOUNT_NAME,
-  process.env.AZURE_STORAGE_ACCOUNT_ACCESS_KEY);
-const pipeline = newPipeline(sharedKeyCredential);
+const sharedKeyCredentialLabel = new StorageSharedKeyCredential(
+  process.env.AZURE_STORAGE_ACCOUNT_LABEL_NAME,
+  process.env.AZURE_STORAGE_ACCOUNT_LABEL_ACCESS_KEY);
+const labelPipeline = newPipeline(sharedKeyCredentialLabel);
 
-const blobServiceClient = new BlobServiceClient(
-  `https://${process.env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net`,
-  pipeline
+const sharedKeyCredentialFood = new StorageSharedKeyCredential(
+  process.env.AZURE_STORAGE_ACCOUNT_FOOD_NAME,
+  process.env.AZURE_STORAGE_ACCOUNT_FOOD_ACCESS_KEY);
+const foodPipeline = newPipeline(sharedKeyCredentialFood);
+
+const labelBlobServiceClient = new BlobServiceClient(
+  `https://${process.env.AZURE_STORAGE_ACCOUNT_LABEL_NAME}.blob.core.windows.net`,
+  labelPipeline
+);
+
+const foodBlobServiceClient = new BlobServiceClient(
+  `https://${process.env.AZURE_STORAGE_ACCOUNT_FOOD_NAME}.blob.core.windows.net`,
+  foodPipeline
 );
 
 const cosmosClient = new CosmosClient({
@@ -84,7 +94,7 @@ router.post('/upload-label-image', uploadStrategy, async (req, res) => {
   // upload nutrition label image into blob store
   const blobName = getBlobName(req.file.originalname);
   const stream = getStream(req.file.buffer);
-  const containerClient = blobServiceClient.getContainerClient('label-images');;
+  const containerClient = labelBlobServiceClient.getContainerClient('label-images');;
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
   const mimeType = req.file.mimetype;
   
@@ -180,7 +190,7 @@ router.post('/upload-food-image', uploadStrategy, async (req, res) => {
   // upload food image into blob store
   const blobName = getBlobName(req.file.originalname);
   const stream = getStream(req.file.buffer);
-  const containerClient = blobServiceClient.getContainerClient('food-images');;
+  const containerClient = foodBlobServiceClient.getContainerClient('food-images');;
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
   const mimeType = req.file.mimetype;
   

@@ -18,11 +18,13 @@ Install dependencies via `npm`:
 npm install
 ```
 
-## Adding Azure Storage Account name and key
-Navigate to your storage account in the Azure and copy the account name and key (under **Settings** > **Access keys**) into the a new `.env` file. This project assumes you have one storage account with two containers `label-images` and `food-images`.
+## Adding Azure Storage Accounts
+Navigate to your storage account in the Azure and copy the account name and key (under **Settings** > **Access keys**) into the a new `.env` file. This project assumes you have two storage accounts, one with container `label-images` and the other `food-images`.
 ```
-AZURE_STORAGE_ACCOUNT_NAME=
-AZURE_STORAGE_ACCOUNT_ACCESS_KEY=
+AZURE_STORAGE_ACCOUNT_LABEL_NAME=
+AZURE_STORAGE_ACCOUNT_LABEL_ACCESS_KEY=
+AZURE_STORAGE_ACCOUNT_FOOD_NAME=
+AZURE_STORAGE_ACCOUNT_FOOD_ACCESS_KEY=
 ```
 
 ## Running Locally

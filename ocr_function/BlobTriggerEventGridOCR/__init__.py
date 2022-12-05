@@ -88,7 +88,7 @@ def perform_ocr(blob_uri):
         read_result = computervision_client.get_read_result(operation_id)
         if read_result.status not in ['notStarted', 'running']:
             break
-        time.sleep(0.1)
+        time.sleep(0.5)
 
     logging.info(f"OCR Response Status: {read_result.status}.")
     return read_result

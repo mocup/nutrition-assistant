@@ -7,7 +7,7 @@
       "direction": "in",
       "path": "food-images/{name}",
       "source": "EventGrid",
-      "connection": "5412imagestorage_STORAGE"
+      "connection": "5412foodstorage_STORAGE"
     }
   ]
 }

@@ -117,13 +117,16 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   // get nutrition data in specified date range from cosmos db
   // extract local dates from UI
   const dateRange = req.body.dates.split(" ");
-  const startDateLocal = new Date(dateRange[0]);
-  const endDateLocal = new Date(dateRange[2]);
-  const dates = {startDate: startDateLocal.toISOString(), 
-                 endDate: endDateLocal.toISOString()}
+  const startDateUTC = new Date(dateRange[0]);
+  const endDateUTC = new Date(dateRange[2]);
+  
+  endDateUTC.setDate(endDateUTC.getDate() + 1);
+  
+  const startDateTimeUTC = startDateUTC.toISOString();
+  const endDateTimeUTC = endDateUTC.toISOString();
 
   // convert local dates to UTC
-  const {startDateUTC, endDateUTC} = computeDateRange(dates)
+  //const {startDateUTC, endDateUTC} = computeDateRange(dates)
 
   // access nutrition data container
   const container = cosmosClient.database("nutrition_database").container("nutrition_data");
@@ -140,14 +143,14 @@ router.post('/fetch-nutrition-data', async (req, res) => {
             sum(d['Total Sugars']), 
             sum(d['Protein'])
             from nutrition_data d 
-            where TimestampToDateTime(d['_ts']*1000) >= '` + startDateUTC + 
-            "' and TimestampToDateTime(d['_ts']*1000) < '" + endDateUTC + "'",
+            where TimestampToDateTime(d['_ts']*1000) >= '` + startDateTimeUTC + 
+            "' and TimestampToDateTime(d['_ts']*1000) < '" + endDateTimeUTC + "'",
   };
 
   const { resources: macronutrients } = await container.items.query(macronutrientQuerySpec).fetchAll();
 
   // also compute daily averages over selected range
-  const numDays = Math.floor((endDateLocal.getTime() - startDateLocal.getTime()) / (1000 * 3600 * 24)) + 1;
+  const numDays = Math.floor((endDateUTC.getTime() - startDateUTC.getTime()) / (1000 * 3600 * 24));
   var macronutrientAverages = {};
   for(const [key, value] of Object.entries(macronutrients[0])){
     // round total values and average values to two decimal places
@@ -162,7 +165,7 @@ router.post('/fetch-nutrition-data', async (req, res) => {
             d['prediction'],
             d['probability']
             from nutrition_data d 
-            where d.timestamp >= '` + startDateUTC + "' and d.timestamp < '" + endDateUTC + "'",
+            where d.timestamp >= '` + startDateTimeUTC + "' and d.timestamp < '" + endDateTimeUTC + "'",
   };
 
   var { resources: predictions } = await container.items.query(classifierQuerySpec).fetchAll();

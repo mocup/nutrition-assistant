@@ -125,6 +125,9 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   const startDateTimeUTC = startDateUTC.toISOString();
   const endDateTimeUTC = endDateUTC.toISOString();
 
+  console.log(startDateTimeUTC);
+  console.log(endDateTimeUTC);
+
   // convert local dates to UTC
   //const {startDateUTC, endDateUTC} = computeDateRange(dates)
 

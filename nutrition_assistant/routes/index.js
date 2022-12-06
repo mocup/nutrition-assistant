@@ -140,7 +140,8 @@ router.post('/fetch-nutrition-data', async (req, res) => {
             sum(d['Total Sugars']), 
             sum(d['Protein'])
             from nutrition_data d 
-            where d.timestamp >= '` + startDateUTC + "' and d.timestamp < '" + endDateUTC + "'",
+            where TimestampToDateTime(d['_ts']*1000) >= '` + startDateUTC + 
+            "' and TimestampToDateTime(d['_ts']*1000) < '" + endDateUTC + "'",
   };
 
   const { resources: macronutrients } = await container.items.query(macronutrientQuerySpec).fetchAll();
@@ -157,7 +158,7 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   // database query gets food predictions and probabilities in chosen range
   const classifierQuerySpec = {
     query: `select
-            d['timestamp'],
+            TimestampToDateTime(d['_ts']*1000) as timestamp,
             d['prediction'],
             d['probability']
             from nutrition_data d 

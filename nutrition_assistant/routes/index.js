@@ -54,7 +54,7 @@ const computeDateRange = dates => {
   // Convert range of dates from local time to UTC.
 
   // offset between local time and UTC time
-  //const hoursOffset = new Date().getTimezoneOffset() / 60;
+  const hoursOffset = new Date().getTimezoneOffset() / 60;
 
   // convert selected local dates into Date objects
   var startDate = dates.startDate;
@@ -67,8 +67,8 @@ const computeDateRange = dates => {
   endDate.setDate(endDate.getDate() + 1);
 
   // convert local time to UTC time
-  // startDate.setHours(startDate.getHours() + hoursOffset);
-  // endDate.setHours(endDate.getHours() + hoursOffset);
+  startDate.setHours(startDate.getHours() + hoursOffset);
+  endDate.setHours(endDate.getHours() + hoursOffset);
 
   // return strings in ISO format
   startDate = startDate.toISOString();

@@ -161,11 +161,12 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   // database query gets food predictions and probabilities in chosen range
   const classifierQuerySpec = {
     query: `select
-            TimestampToDateTime(d['_ts']*1000) as timestamp,
+            d['_ts'],
             d['prediction'],
             d['probability']
             from nutrition_data d 
-            where d.timestamp >= '` + startDateTimeUTC + "' and d.timestamp < '" + endDateTimeUTC + "'",
+            where TimestampToDateTime(d['_ts']*1000) >= '` + startDateTimeUTC + 
+            "' and TimestampToDateTime(d['_ts']*1000) < '" + endDateTimeUTC + "'",
   };
 
   var { resources: predictions } = await container.items.query(classifierQuerySpec).fetchAll();
@@ -173,7 +174,7 @@ router.post('/fetch-nutrition-data', async (req, res) => {
   // only include non-empty predictions in table
   predictions = predictions.filter(element => {
     if (Object.keys(element).length > 1) {
-      element['timestamp'] = new Date(element['timestamp']).toLocaleDateString();
+      element['_ts'] = new Date(element['_ts'] * 1000).toLocaleString();
       return true;
     }
   

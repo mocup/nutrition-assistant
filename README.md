@@ -3,7 +3,7 @@
 ## VIDEO: https://youtu.be/lqRh6MhoyS4
 ## REPORT: see "5412_Project_Final_Report.pdf" above
 
-By Morgan Cupp and Berk Erdal
+This project was created by Morgan Cupp and Berk Erdal.
 
 ## Prerequisites
 Clone the repository to your machine:
